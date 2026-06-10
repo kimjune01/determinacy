@@ -2,7 +2,11 @@
 an `agent` CLI command, a `[source]` (HF dataset+split or a local jsonl), and a
 `[fields]` map from canonical names to the bench's column names (dotted paths ok).
 """
-import tomllib, pathlib
+import pathlib
+try:
+    import tomllib
+except ModuleNotFoundError:  # py<3.11
+    import tomli as tomllib
 
 CANONICAL = ["instance_id", "problem_statement", "gold_patch", "test_patch",
              "fail_to_pass", "repo", "base_commit"]

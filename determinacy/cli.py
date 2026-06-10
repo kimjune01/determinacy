@@ -8,7 +8,7 @@ import argparse, pathlib, sys
 from .config import load_config
 from .adapter import load_tasks
 from .materialize import materialize
-from . import coverage, witness, report, receipts
+from . import coverage, witness, plurality, refute, report, receipts
 
 
 def main(argv=None):
@@ -40,16 +40,24 @@ def main(argv=None):
     print(f"[determinacy]   {amb}/{len(recs)} AMBIGUOUS (>=1 grep-verified GAP)")
 
     if a.tier >= 2:
-        print(f"[determinacy] tier 2 airtight witnesses (clone+grep)")
+        print(f"[determinacy] tier 2a airtight witnesses (clone+grep)")
         counts = witness.run(cases, cfg["agent"], out, cache, do_clone=not a.no_clone, workers=a.workers)
         print(f"[determinacy]   airtight={counts['airtight']} "
               f"prose-affirmative={counts['prose-affirmative']} hypothesis={counts['hypothesis']}")
+        if not a.no_clone:
+            print(f"[determinacy] tier 2b codebase-plurality (clone+grep, multiplicity)")
+            ncand = plurality.run(cases, cfg["agent"], out, cache, workers=a.workers)
+            print(f"[determinacy]   {ncand} plural candidates")
+            print(f"[determinacy] tier 2c comparability refutation (the quality gate)")
+            ref = refute.run(cases, cfg["agent"], workers=a.workers)
+            print(f"[determinacy]   plural survived={ref['survived']} dropped(cherry-pick)={ref['dropped']}")
 
     summary = report.build_report(out, cases, cfg["name"])
     nr = receipts.write_all(cases, out)
     print(f"[determinacy] wrote {nr} per-problem receipts (cases/<id>/RECEIPT.md)")
-    print(f"[determinacy] DONE. spine={summary['airtight']} airtight, "
-          f"coverage={summary['behavior_gap_pct']:.1f}% behavior-level. "
+    print(f"[determinacy] DONE. claimable spine = {summary.get('spine', summary['airtight'])} "
+          f"({summary['airtight']} airtight + {summary.get('plural', 0)} plural); "
+          f"coverage screen {summary['behavior_gap_pct']:.1f}% behavior-level. "
           f"See {out}/REPORT.md and {out}/CLAIMS.md")
 
 

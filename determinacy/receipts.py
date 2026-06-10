@@ -24,11 +24,14 @@ def write_receipt(case_dir, out_dir):
 
     airtight = const = None
     klass = "entailed"
-    if (d / "AMBIGUITY_WITNESS.md").exists() and "class: **airtight**" in (d / "AMBIGUITY_WITNESS.md").read_text():
+    w = d / "AMBIGUITY_WITNESS.md"
+    if w.exists() and "class: **airtight**" in w.read_text():
         airtight = True
-        m = re.search(r"constant `([^`]+)`", (d / "AMBIGUITY_WITNESS.md").read_text())
+        m = re.search(r"constant `([^`]+)`", w.read_text())
         const = m.group(1) if m else None
         klass = "airtight"
+    elif w.exists() and "class: **codebase-plural**" in w.read_text():
+        klass = "codebase-plural"
     elif (d / "AMBIGUITY_HYPOTHESIS.md").exists():
         t = (d / "AMBIGUITY_HYPOTHESIS.md").read_text()
         m = re.search(r"class: \*\*([\w-]+)\*\*", t)
@@ -37,7 +40,8 @@ def write_receipt(case_dir, out_dir):
     elif cov and cov.get("verdict") == "AMBIGUOUS":
         klass = "ambiguous (unwitnessed)"
 
-    verdict = {"airtight": "AIRTIGHT (claimable -- mechanical spine)"}.get(
+    verdict = {"airtight": "AIRTIGHT (claimable -- mechanical spine)",
+               "codebase-plural": "CODEBASE-PLURAL (claimable -- multiplicity evidence)"}.get(
         klass, "ENTAILED (every graded behavior has a covering clause)"
         if klass == "entailed" else f"NOT CLAIMED ({klass})")
 
@@ -59,6 +63,16 @@ def write_receipt(case_dir, out_dir):
               f"rg --fixed-strings -g '!*test*' -e {_shq(const)}   # expect: no matches (absent)",
               "```",
               "[witness](AMBIGUITY_WITNESS.md)", ""]
+    elif klass == "codebase-plural":
+        prec = json.loads((d / "codebase_ambiguity.json").read_text()).get("verified", []) \
+            if (d / "codebase_ambiguity.json").exists() else []
+        L += ["## Tier 2 -- codebase-plural (mechanical)",
+              f"The codebase makes the choice ≥2 conflicting live ways while the prose is silent, and the "
+              f"comparability pass confirmed they are the same decision. The plurality is the receipt — "
+              f"point at the precedents (clone `{repo}` @ `{(base or '')[:12]}`):", ""]
+        for p in prec[:3]:
+            L.append(f"- `{p.get('verified_path')}` — {p.get('way','')}")
+        L += ["", "[witness](AMBIGUITY_WITNESS.md)", ""]
     elif "hypothesis" in klass:
         L += ["## Tier 2 -- not certified",
               f"Flagged `{klass}` by the screen but not mechanically certifiable as underdetermination "

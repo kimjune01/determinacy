@@ -27,16 +27,21 @@ def build_report(out_dir, cases_dir, name):
     beh = sum(r["in_gold_total"] for r in recs)
     gap = sum(r["n_gap"] for r in recs)
 
-    airtight, hyps = [], 0
+    airtight, plural, hyps = [], [], 0
     for d in cases_dir.iterdir():
-        if (d / "AMBIGUITY_WITNESS.md").exists():
-            t = (d / "AMBIGUITY_WITNESS.md").read_text()
+        w = d / "AMBIGUITY_WITNESS.md"
+        if w.exists():
+            t = w.read_text()
             if "class: **airtight**" in t:
                 m = re.search(r"constant `([^`]+)`", t)
                 airtight.append((d.name, m.group(1) if m else "?"))
+            elif "class: **codebase-plural**" in t:
+                npre = len(re.findall(r"(?m)^[0-9]+\. `", t))
+                plural.append((d.name, f"{npre} precedents"))
         elif (d / "AMBIGUITY_HYPOTHESIS.md").exists():
             hyps += 1
-    alo, ahi = wilson(len(airtight), n)
+    spine = len(airtight) + len(plural)
+    slo, shi = wilson(spine, n)
 
     R = [f"# Determinacy report -- {name}", "",
          f"Cases with >=1 graded behavior: **{n}**.  Graded behaviors total: **{beh}**.", "",
@@ -45,23 +50,31 @@ def build_report(out_dir, cases_dir, name):
          f"{len(amb)}/{n} = {100*len(amb)/n:.1f}% | loose upper bound |",
          f"| 1 coverage (behavior-level) | prose-silent graded behaviors (grep-verified) | "
          f"{gap}/{beh} = {100*gap/beh:.1f}% | upper bound (over-flags) |",
-         f"| **2 airtight (mechanical spine)** | constant absent from prose+codebase (clone+grep) | "
-         f"**{len(airtight)}/{n} = {100*len(airtight)/n:.1f}%** (Wilson95 {100*alo:.1f}-{100*ahi:.1f}) | "
-         f"**claimable** |",
-         f"| hypotheses | prose-affirmative + codebase, raters-pending | {hyps} | not claimed |", "",
+         f"| 2a airtight | constant absent from prose+codebase (clone+grep) | "
+         f"{len(airtight)}/{n} = {100*len(airtight)/n:.1f}% | claimable |",
+         f"| 2b codebase-plural | >=2 conflicting live precedents, comparability-survived | "
+         f"{len(plural)}/{n} = {100*len(plural)/n:.1f}% | claimable |",
+         f"| **claimable spine (2a + 2b)** | pointer-checkable, refutation-hardened | "
+         f"**{spine}/{n} = {100*spine/n:.1f}%** (Wilson95 {100*slo:.1f}-{100*shi:.1f}) | **the claim** |",
+         f"| hypotheses | prose-affirmative + cherry-picks + unwitnessed | {hyps} | not claimed |", "",
          "Tiers 0-1 over-flag (parametrized behaviors, convention-resolved silence) and are disclosed as "
-         "upper bounds. Only tier 2 survives a hostile reader. See `CLAIMS.md` for the certified spine.", ""]
+         "upper bounds. Only the spine survives a hostile reader; it is a lower bound (a single pass "
+         "under-counts). See `CLAIMS.md`.", ""]
     (out_dir / "REPORT.md").write_text("\n".join(R) + "\n")
 
-    C = [f"# CLAIMS -- {name}: airtight witnesses (mechanical spine)", "",
-         "Each row: the hidden test grades a discriminating constant absent from the prose AND the "
-         "codebase at base_commit (clone + ripgrep), present only in gold+test. Re-runnable; no model "
-         "judgment in the verdict.", "",
-         "| case | discriminating constant | witness | receipts |", "|---|---|---|---|"]
+    C = [f"# CLAIMS -- {name}: claimable spine (mechanical, pointer-checkable)", "",
+         "Each row settles by a pointer a skeptic re-runs, not a rating. **airtight**: a discriminating "
+         "constant absent from prose AND codebase (clone + `rg`). **codebase-plural**: >=2 conflicting "
+         "live precedents (grep-verified, comparability-survived).", "",
+         "| case | kind | evidence | witness | receipts |", "|---|---|---|---|---|"]
     for case, const in sorted(airtight):
         rel = f"cases/{case}"
-        C.append(f"| `{case}` | `{const[:60]}` | [witness]({rel}/AMBIGUITY_WITNESS.md) | "
-                 f"[spec]({rel}/spec.md) · [gold]({rel}/gold.diff) · [test]({rel}/hidden_test.diff) |")
+        C.append(f"| `{case}` | airtight | `{const[:50]}` absent | [w]({rel}/AMBIGUITY_WITNESS.md) | "
+                 f"[spec]({rel}/spec.md)·[gold]({rel}/gold.diff)·[test]({rel}/hidden_test.diff) |")
+    for case, ev in sorted(plural):
+        rel = f"cases/{case}"
+        C.append(f"| `{case}` | plural | {ev} conflict | [w]({rel}/AMBIGUITY_WITNESS.md) | "
+                 f"[spec]({rel}/spec.md)·[gold]({rel}/gold.diff)·[test]({rel}/hidden_test.diff) |")
     (out_dir / "CLAIMS.md").write_text("\n".join(C) + "\n")
     return {"n": n, "behavior_gap_pct": 100 * gap / beh if beh else 0,
-            "airtight": len(airtight), "hypotheses": hyps}
+            "airtight": len(airtight), "plural": len(plural), "spine": spine, "hypotheses": hyps}
