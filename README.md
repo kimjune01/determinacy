@@ -107,3 +107,7 @@ Full pipeline, all nine phases with the certification rules and the agent-propos
 ## Worked reference
 
 [`kimjune01/swebench-pro-audit`](https://github.com/kimjune01/swebench-pro-audit) is a full 728-task determinacy audit built with this method: the admissibility spec, the full witness grid, the mechanical-spine-vs-hypothesis discipline, the two-precedent codebase rule, and ~700 per-case receipts. Read it for the methodology in depth; this tool packages that pipeline to point at any bench.
+
+## License
+
+AGPL-3.0-or-later (copyleft). Running the tool unmodified — including as a gate in your own release pipeline — carries no source obligation, and the audit it produces is yours. The copyleft bites only if you **modify** determinacy and then distribute it or run the modified version as a network service: in that case you must release your changes under the same license. If you cite the method, see `CITATION.cff`.

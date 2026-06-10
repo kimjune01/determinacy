@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use determinacy or its method, please cite it as below."
+title: "determinacy: a determinacy auditor for SWE-bench-shaped coding benchmarks"
+abstract: >-
+  A tool that audits coding benchmarks for tasks whose hidden test grades a value
+  the issue text never determines. It certifies a mechanical spine (airtight constants
+  absent from prose and codebase; codebase-plurality of conflicting live precedents,
+  comparability-refuted) with grep-checkable, per-problem receipts.
+type: software
+authors:
+  - family-names: Kim
+    given-names: June
+    alias: kimjune01
+repository-code: "https://github.com/kimjune01/determinacy"
+url: "https://github.com/kimjune01/determinacy"
+license: AGPL-3.0-or-later
+version: "0.1.0"
+date-released: "2026-06-10"
+keywords:
+  - benchmark
+  - evaluation
+  - coding agents
+  - SWE-bench
+  - specification determinacy

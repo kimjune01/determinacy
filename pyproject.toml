@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Determinacy auditing for SWE-bench-shaped coding benchmarks"
 requires-python = ">=3.11"
 dependencies = ["datasets>=2.0"]
+classifiers = ["License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)"]
 
 [project.scripts]
 determinacy = "determinacy.cli:main"
