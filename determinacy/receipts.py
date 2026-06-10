@@ -32,7 +32,8 @@ def write_receipt(case_dir, out_dir):
     elif (d / "AMBIGUITY_HYPOTHESIS.md").exists():
         t = (d / "AMBIGUITY_HYPOTHESIS.md").read_text()
         m = re.search(r"class: \*\*([\w-]+)\*\*", t)
-        klass = f"hypothesis ({m.group(1)})" if m else "hypothesis"
+        sub = m.group(1) if m else "hypothesis"
+        klass = "hypothesis" if sub == "hypothesis" else f"hypothesis ({sub})"
     elif cov and cov.get("verdict") == "AMBIGUOUS":
         klass = "ambiguous (unwitnessed)"
 
