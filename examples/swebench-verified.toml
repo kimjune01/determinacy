@@ -1,0 +1,17 @@
+# SWE-bench Verified (Princeton/OpenAI) -- the canonical human-filtered SWE-bench subset.
+# Standard SWE-bench column names.
+name = "swe-bench-verified"
+agent = "codex exec --skip-git-repo-check --dangerously-bypass-approvals-and-sandbox -c model=gpt-5.5 -"
+
+[source]
+hf_dataset = "princeton-nlp/SWE-bench_Verified"
+split = "test"
+
+[fields]
+instance_id       = "instance_id"
+problem_statement = "problem_statement"
+gold_patch        = "patch"
+test_patch        = "test_patch"
+fail_to_pass      = "FAIL_TO_PASS"
+repo              = "repo"
+base_commit       = "base_commit"

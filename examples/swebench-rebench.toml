@@ -1,0 +1,17 @@
+# SWE-rebench (Nebius) -- continuously-updated, "decontaminated" SWE-agent benchmark.
+# The monthly leaderboard splits carry full task fields. Pick the latest split.
+name = "swe-rebench-2026_03"
+agent = "codex exec --skip-git-repo-check --dangerously-bypass-approvals-and-sandbox -c model=gpt-5.5 -"
+
+[source]
+hf_dataset = "nebius/SWE-rebench-leaderboard"
+split = "2026_03"
+
+[fields]
+instance_id       = "instance_id"
+problem_statement = "problem_statement"
+gold_patch        = "patch"
+test_patch        = "test_patch"
+fail_to_pass      = "FAIL_TO_PASS"
+repo              = "repo"
+base_commit       = "base_commit"

@@ -1,0 +1,18 @@
+# SWE-bench Pro (Scale AI) -- harder, contamination-resistant SWE-bench variant.
+# A full 728-task determinacy audit of this bench is the worked reference:
+# https://github.com/kimjune01/swebench-pro-audit
+name = "swe-bench-pro"
+agent = "codex exec --skip-git-repo-check --dangerously-bypass-approvals-and-sandbox -c model=gpt-5.5 -"
+
+[source]
+hf_dataset = "ScaleAI/SWE-bench_Pro"
+split = "test"
+
+[fields]
+instance_id       = "instance_id"
+problem_statement = "problem_statement"
+gold_patch        = "patch"
+test_patch        = "test_patch"
+fail_to_pass      = "FAIL_TO_PASS"
+repo              = "repo"
+base_commit       = "base_commit"
